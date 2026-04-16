@@ -232,6 +232,8 @@
 
     .basket-section {
         position: relative;
+        min-height: auto !important;
+        height: auto !important;
     }
 }
 

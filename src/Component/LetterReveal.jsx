@@ -64,7 +64,7 @@ const LetterReveal = ({
                             {char}
                         </span>
                     ))}
-                    {"\u00A0"}
+                    {wordIndex < text.split(" ").length - 1 && "\u00A0"}
                 </span>
             ))}
         </h2>

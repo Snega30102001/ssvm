@@ -163,6 +163,7 @@
 
     .basket-section {
         /* background-color: #0e0e0e; */
+        height: auto !important;
     }
 
     .left_fonder_content {

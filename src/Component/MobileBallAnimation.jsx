@@ -16,6 +16,7 @@ const MobileBallAnimation = () => {
     const ballRef = useRef(null);
     const contentRef = useRef(null);
     const bgRevealRef = useRef(null);
+    const arrowRef = useRef(null);
 
     useEffect(() => {
         const anim = lottie.loadAnimation({
@@ -47,6 +48,7 @@ const MobileBallAnimation = () => {
                 y: -window.innerHeight,
                 scale: 0.1,
                 opacity: 0,
+                display: "none",
                 ease: "power2.inOut",
                 duration: 5,
             }, 0);
@@ -106,6 +108,19 @@ const MobileBallAnimation = () => {
                 { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "back.out(1.4)" },
                 .5
             );
+
+            // Separate ScrollTrigger for instant arrow hide
+            ScrollTrigger.create({
+                trigger: containerRef.current,
+                start: "top top",
+                onUpdate: (self) => {
+                    if (self.progress > 0.01) {
+                        gsap.to(arrowRef.current, { opacity: 0, scale: 0, visibility: "hidden", duration: 0.2 });
+                    } else {
+                        gsap.to(arrowRef.current, { opacity: 1, scale: 1, visibility: "visible", duration: 0.2 });
+                    }
+                }
+            });
         });
 
         return () => {
@@ -131,11 +146,13 @@ const MobileBallAnimation = () => {
 
                 {/* BALL */}
                 <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ zIndex: 5 }}>
-                    <div ref={ballRef} className="minimal-ball-v12"></div>
+                    <div ref={ballRef} className="minimal-ball-v12 d-flex justify-content-center align-items-center">
+                        <i ref={arrowRef} className="bi bi-chevron-down text-dark fs-2 fw-bold jump-animation"></i>
+                    </div>
                 </div>
 
                 {/* CONTENT */}
-                <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-end pb-5" style={{ zIndex: 10 }}>
+                <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center" style={{ zIndex: 10 }}>
 
                     {/* LOTTIE */}
                     <div style={{ height: "12vh", width: "100%" }}>
@@ -149,10 +166,10 @@ const MobileBallAnimation = () => {
                         className="text-center px-3 mb-5"
                     >
                         <div className="text-reveal-item mb-3">
-                            <div className="main-brand-stack">
-                                <LetterReveal text="Ssvm Transforming" className="fw-bold text-dark" controlled />
-                                <LetterReveal text="India Conclave" className="fw-bold text-dark" controlled />
-                                <LetterReveal text="2026" className="fw-bold text-dark" controlled />
+                            <div className="main-brand-stack d-flex flex-column align-items-center text-center">
+                                <LetterReveal text="Ssvm Transforming" className="fw-bold text-dark text-center" controlled />
+                                <LetterReveal text="India Conclave" className="fw-bold text-dark text-center" controlled />
+                                <LetterReveal text="2026" className="fw-bold text-dark text-center" controlled />
                             </div>
                         </div>
 
@@ -172,6 +189,14 @@ const MobileBallAnimation = () => {
                     height: 75px;
                     background: #F2FF33;
                     border-radius: 50%;
+                }
+                .jump-animation {
+                    display: inline-block;
+                    animation: jump 1.5s infinite ease-in-out;
+                }
+                @keyframes jump {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(10px); }
                 }
             `}</style>
         </div>
