@@ -8,34 +8,40 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import { SecurityErrorBoundary, SecurityUtils } from './utils/Security';
 
-/* ✅ 0. GLOBAL SCROLL REFRESH ON LOAD */
+/* ✅ 0. GLOBAL SCROLL REFRESH ON LOAD & RESIZE */
 const handleInitialLoadRefresh = () => {
+  // 1. Initial load refresh
   window.addEventListener('load', () => {
-    // Refresh AOS and ScrollTrigger after all resources (images, fonts, lottie) are fully loaded
     setTimeout(() => {
-      if (window.gsap && window.gsap.utils) {
-         const ScrollTrigger = window.gsap.utils.toArray(window.gsap.plugins).find(p => p.name === "ScrollTrigger");
-         if (ScrollTrigger) ScrollTrigger.refresh();
-      }
-      
-      // Refresh AOS if it exists
-      if (window.AOS) {
-         window.AOS.refresh();
-      }
-
-      // Final safety refresh after another delay to catch the slow Lottie renders
-      setTimeout(() => {
-        if (window.gsap && window.gsap.utils) {
-          const ScrollTrigger = window.gsap.utils.toArray(window.gsap.plugins).find(p => p.name === "ScrollTrigger");
-          if (ScrollTrigger) ScrollTrigger.refresh();
-        }
-      }, 1000);
-
+      refreshAll();
     }, 500);
   });
+
+  // 2. Aggressive ResizeObserver to catch Lottie layout shifts
+  const refreshAll = () => {
+    if (window.gsap && window.gsap.utils) {
+      const ScrollTrigger = window.gsap.utils.toArray(window.gsap.plugins).find(p => p.name === "ScrollTrigger");
+      if (ScrollTrigger) ScrollTrigger.refresh();
+    }
+    if (window.AOS) {
+      window.AOS.refresh();
+    }
+  };
+
+  const resizeObserver = new ResizeObserver(() => {
+    refreshAll();
+  });
+
+  resizeObserver.observe(document.body);
+
+  // 3. Fallback refreshes
+  setTimeout(refreshAll, 1000);
+  setTimeout(refreshAll, 3000);
+  setTimeout(refreshAll, 5000);
 };
 
 handleInitialLoadRefresh();
+
 
 
 
