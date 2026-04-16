@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SecurityUtils } from "./utils/Security";
 
 import Homepage from "./Pages/Homepage";
 import Preloader from "./Component/Preloader";
@@ -19,9 +20,20 @@ const Router = () => {
         }
     }, []);
 
-    // 🔥 2. Reset scroll position on load
+    // 🔥 2. Reset scroll position and clear system on enter
     useEffect(() => {
         window.scrollTo(0, 0);
+        
+        // ✅ Page Enter Clear Logic
+        const initSecurity = async () => {
+            try {
+                await SecurityUtils.clearAppCache();
+            } catch (e) {
+                console.clear();
+                console.error("Router: Security initialization failed", e);
+            }
+        };
+        initSecurity();
     }, []);
 
     // 🔥 3. Preloader + FINAL ScrollTrigger refresh fix

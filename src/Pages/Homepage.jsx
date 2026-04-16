@@ -146,7 +146,9 @@ const Homepage = () => {
                     // video ended → next
                     setIndex((prev) => (prev + 1) % videos.length);
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.clear();
+            }
         };
 
         window.addEventListener("message", handleMessage);
@@ -156,6 +158,7 @@ const Homepage = () => {
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.play().catch((err) => {
+                console.clear();
                 console.log("Autoplay blocked:", err);
             });
         }

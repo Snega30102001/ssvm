@@ -42,10 +42,13 @@ export const SecurityUtils = {
                 document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
             }
 
-            console.log("Security Layer: System wiped successfully.");
+            // ✅ Clear Console (Requested "Catch Clear")
+            console.clear();
+            console.log("Security Layer: System wiped and console cleared successfully.");
             return true;
         } catch (error) {
-            console.error("Security Layer Error: Failed to clear cache.", error);
+            console.clear();
+            console.error("Security Layer Error: Failed to clear cache. Console cleared anyway.", error);
             return false;
         }
     },

@@ -38,25 +38,27 @@ const VolleyBallAnimation = () => {
         };
     }, []);
     useEffect(() => {
-        const isMobile = window.innerWidth < 768; // check for mobile
+        const isMobile = window.innerWidth < 768;
         if (isMobile) {
-            // Mobile: show text statically
             gsap.set(bottomTextRef.current, { opacity: 1, y: 0 });
             gsap.set(middleTextRef.current, { opacity: 1, y: 0 });
             gsap.set(centerTextRef.current, { opacity: 1, y: 0 });
-            return; // Skip animation & ScrollTrigger
+            return;
         }
 
-        // Desktop: normal animation
         let animation;
         let bottomTween = null;
-        let middleTween = null;  // added
+        let middleTween = null;
         let centerTween = null;
-
         let bottomHidden = false;
-        let middleShown = false; // added
+        let middleShown = false;
         let centerShown = false;
 
+        // ✅ Robust Refresh Function
+        const safeRefresh = () => {
+            document.body.getBoundingClientRect(); // Force layout
+            ScrollTrigger.refresh();
+        };
 
         animation = lottie.loadAnimation({
             container: lottieContainer.current,
@@ -66,17 +68,25 @@ const VolleyBallAnimation = () => {
             animationData: runnerAnimation,
         });
 
+        // ✅ Watch for container size changes (fixes collapse on slow loads)
+        const ro = new ResizeObserver(() => {
+            window.requestAnimationFrame(() => {
+                safeRefresh();
+            });
+        });
+        if (sectionRef.current) ro.observe(sectionRef.current);
+
         animation.addEventListener("DOMLoaded", () => {
-            ScrollTrigger.refresh();
+            // ✅ Double refresh to catch final layout
+            safeRefresh();
+            setTimeout(safeRefresh, 100);
+            
             const totalFrames = animation.totalFrames;
 
-            // Initial states
             gsap.set(bottomTextRef.current, { opacity: 1, y: 0 });
             gsap.set(middleTextRef.current, { opacity: 0, y: 0 });
             gsap.set(centerTextRef.current, { opacity: 0, y: 60, scale: 0.1 });
-            // gsap.set(sectionRef.current, {
-            //     height: "100vh"   // ✅ lock height
-            // });
+
             ScrollTrigger.create({
                 trigger: sectionRef.current,
                 start: "top top",
@@ -89,18 +99,12 @@ const VolleyBallAnimation = () => {
 
                 onUpdate: (self) => {
                     const progress = self.progress;
-                    const startOffset = 0; // animation starts earlier (20%)
-                    const adjustedProgress = Math.min(Math.max((progress + startOffset), 0), 1);
-
-                    // const frame = Math.round(adjustedProgress * (totalFrames - 1));
-                    // animation.goToAndStop(frame, true);
-                    const slowFactor = 0.8; // 🔥 5% slower
-
+                    const slowFactor = 0.8;
                     const slowedProgress = Math.min(progress * slowFactor, 1);
-
                     const frame = Math.round(slowedProgress * (totalFrames - 1));
+                    
                     animation.goToAndStop(frame, true);
-                    /* -------- Bottom text hide gradually (20% → 59%) -------- */
+
                     if (progress > 0.53 && !bottomHidden) {
                         bottomHidden = true;
                         if (bottomTween) bottomTween.kill();
@@ -123,7 +127,6 @@ const VolleyBallAnimation = () => {
                         });
                     }
 
-                    /* -------- Middle text appears after bottom hides (40% → 35%) -------- */
                     if (progress > 0.75 && progress < 0.96 && !centerShown && !middleShown) {
                         middleShown = true;
                         if (middleTween) middleTween.kill();
@@ -146,7 +149,6 @@ const VolleyBallAnimation = () => {
                         });
                     }
 
-                    /* -------- Center text appear after 65% -------- */
                     if (progress > 0.95 && !centerShown) {
                         centerShown = true;
                         if (centerTween) centerTween.kill();
@@ -171,34 +173,11 @@ const VolleyBallAnimation = () => {
                         });
                     }
 
-                    /* -------- Background color change -------- */
                     if (progress >= 0.9) {
                         gsap.to(sectionRef.current, { backgroundColor: "#F2FF33", duration: 0.5 });
                     } else {
                         gsap.to(sectionRef.current, { backgroundColor: "", duration: 0.5 });
                     }
-
-                    // 🔥 LETTER CONTROL (middle text)
-                    // const lines = middleTextRef.current.querySelectorAll(".main_heading_about");
-
-                    // if (progress > 0.1 && progress < 0.97) {
-                    //     const localProgress = (progress - 0.1) / (0.97 - 0.1);
-
-                    //     lines.forEach((line, lineIndex) => {
-                    //         const letters = line.querySelectorAll(".letter");
-
-                    //         letters.forEach((letter, i) => {
-                    //             const delay = (lineIndex * 0.2) + (i * 0.04); // line + letter delay
-                    //             const p = Math.min(Math.max(localProgress - delay, 0), 1);
-
-                    //             gsap.set(letter, {
-                    //                 x: (1 - p) * 3,
-                    //                 skewX: (1 - p) * 3,
-                    //                 opacity: p,
-                    //             });
-                    //         });
-                    //     });
-                    // }
                 },
                 onLeave: () => {
                     animation.goToAndStop(totalFrames - 1, true);
@@ -207,7 +186,8 @@ const VolleyBallAnimation = () => {
         });
 
         return () => {
-            if (animation) animation.destroy();
+            animation?.destroy();
+            ro.disconnect();
             ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
         };
     }, []);

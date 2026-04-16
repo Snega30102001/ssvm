@@ -15,6 +15,11 @@ const CycleAnimation = () => {
     useEffect(() => {
         let animation;
 
+        const safeRefresh = () => {
+            document.body.getBoundingClientRect(); // Force layout check
+            ScrollTrigger.refresh();
+        };
+
         animation = lottie.loadAnimation({
             container: lottieRef.current,
             renderer: "svg",
@@ -26,7 +31,19 @@ const CycleAnimation = () => {
             },
         });
 
+        const ro = new ResizeObserver(() => {
+            window.requestAnimationFrame(() => {
+                safeRefresh();
+            });
+        });
+        if (sectionRef.current) ro.observe(sectionRef.current);
+
         const onLoaded = () => {
+            // ✅ Sequence of refreshes to handle nested layout shifts
+            safeRefresh();
+            setTimeout(safeRefresh, 100);
+            setTimeout(safeRefresh, 500);
+
             const totalFrames = animation.totalFrames;
             const playhead = { frame: 0 };
 
@@ -37,29 +54,21 @@ const CycleAnimation = () => {
                     end: "+=1800",
                     scrub: true,
                     pin: true,
+                    invalidateOnRefresh: true,
+                    anticipatePin: 1
                 },
             });
 
-            // ✅ Refresh after setting up ScrollTrigger
-            ScrollTrigger.refresh();
-
-
-            /* ---------------------------
-               🚴 LOTTIE: left → right
-            ----------------------------*/
             gsap.set(lottieRef.current, {
                 x: "-40vw",
                 opacity: 1,
             });
 
             tl.to(lottieRef.current, {
-                x: "120vw", // move across and out
+                x: "120vw",
                 ease: "none",
             }, 0);
 
-            /* ---------------------------
-               🎬 LOTTIE FRAME SYNC
-            ----------------------------*/
             tl.to(
                 playhead,
                 {
@@ -72,9 +81,6 @@ const CycleAnimation = () => {
                 0
             );
 
-            /* ---------------------------
-               📦 CONTENT: left → center
-            ----------------------------*/
             gsap.set(contentRef.current, {
                 x: "-100vw",
                 opacity: 1,
@@ -86,14 +92,15 @@ const CycleAnimation = () => {
                     x: "0vw",
                     ease: "power3.out",
                 },
-                0.6 // starts after bike begins moving
+                0.6
             );
         };
 
         animation.addEventListener("DOMLoaded", onLoaded);
 
         return () => {
-            if (animation) animation.destroy();
+            animation?.destroy();
+            ro.disconnect();
             ScrollTrigger.getAll().forEach((t) => t.kill());
         };
     }, []);

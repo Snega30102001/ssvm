@@ -8,36 +8,45 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import { SecurityErrorBoundary, SecurityUtils } from './utils/Security';
 
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 /* ✅ 0. GLOBAL SCROLL REFRESH ON LOAD & RESIZE */
 const handleInitialLoadRefresh = () => {
-  // 1. Initial load refresh
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      refreshAll();
-    }, 500);
-  });
-
-  // 2. Aggressive ResizeObserver to catch Lottie layout shifts
   const refreshAll = () => {
-    if (window.gsap && window.gsap.utils) {
-      const ScrollTrigger = window.gsap.utils.toArray(window.gsap.plugins).find(p => p.name === "ScrollTrigger");
-      if (ScrollTrigger) ScrollTrigger.refresh();
-    }
+    // Force layout recalculation
+    document.body.getBoundingClientRect();
+    
+    // Refresh ScrollTrigger directly
+    ScrollTrigger.refresh();
+    
+    // Refresh AOS if present
     if (window.AOS) {
       window.AOS.refresh();
     }
   };
 
+  // 1. Initial load refresh (Wait for styles and images)
+  window.addEventListener('load', () => {
+    setTimeout(refreshAll, 500);
+    setTimeout(refreshAll, 1500); // 2nd pass for slow Lotties
+  });
+
+  // 2. Aggressive ResizeObserver to catch any Lottie layout shifts
   const resizeObserver = new ResizeObserver(() => {
-    refreshAll();
+    window.requestAnimationFrame(() => {
+      refreshAll();
+    });
   });
 
   resizeObserver.observe(document.body);
 
-  // 3. Fallback refreshes
-  setTimeout(refreshAll, 1000);
-  setTimeout(refreshAll, 3000);
-  setTimeout(refreshAll, 5000);
+  // 3. Periodic fallback refreshes for the first few seconds
+  [1000, 3000, 5000, 10000].forEach(delay => {
+    setTimeout(refreshAll, delay);
+  });
 };
 
 handleInitialLoadRefresh();

@@ -13,6 +13,10 @@ const TugAnimationSticker = () => {
     const playerRef = useRef(null);
 
     useEffect(() => {
+        const safeRefresh = () => {
+            document.body.getBoundingClientRect(); 
+            ScrollTrigger.refresh();
+        };
 
         // Load Lottie
         playerRef.current = lottie.loadAnimation({
@@ -23,6 +27,13 @@ const TugAnimationSticker = () => {
             animationData: TugAnimation
         });
 
+        const ro = new ResizeObserver(() => {
+            window.requestAnimationFrame(() => {
+                safeRefresh();
+            });
+        });
+        if (wrapperRef.current) ro.observe(wrapperRef.current);
+
         // Initial hidden state
         gsap.set(wrapperRef.current, {
             opacity: 0,
@@ -31,13 +42,13 @@ const TugAnimationSticker = () => {
         });
 
         // Scroll Trigger
-        ScrollTrigger.create({
+        const st = ScrollTrigger.create({
             trigger: wrapperRef.current,
             start: "top 85%",
             end: "top 60%",
+            invalidateOnRefresh: true,
 
             onEnter: () => {
-
                 gsap.to(wrapperRef.current, {
                     opacity: 1,
                     y: 0,
@@ -50,7 +61,6 @@ const TugAnimationSticker = () => {
             },
 
             onLeaveBack: () => {
-
                 gsap.to(wrapperRef.current, {
                     opacity: 0,
                     y: 40,
@@ -62,14 +72,18 @@ const TugAnimationSticker = () => {
             }
         });
 
-        // ✅ Refresh ScrollTrigger when Lottie is loaded
+        // ✅ Multi-stage refresh when SVG is ready
         playerRef.current.addEventListener("DOMLoaded", () => {
-            ScrollTrigger.refresh();
+            safeRefresh();
+            setTimeout(safeRefresh, 200);
+            setTimeout(safeRefresh, 1000);
         });
 
 
         return () => {
             playerRef.current?.destroy();
+            ro.disconnect();
+            st.kill();
         };
 
     }, []);
