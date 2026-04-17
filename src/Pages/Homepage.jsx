@@ -20,10 +20,6 @@ import GuruAwardAnimation from "../Component/GuruAwardAnimation";
 import SpeakerSwiper from "../Component/SpeakerSwiper";
 import CycleAnimation from "../Component/CycyleAnimation";
 
-
-import Navbar from "./Navbar";
-import Footer from "./Footer";
-
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -269,11 +265,9 @@ const Homepage = () => {
 
     return (
         <>
-            <CustomCursor />
             <section id="home">
                 <div className="main_content">
                     <div className="top_section">
-                        <Navbar />
                         <div className="section_container banner_content_parent">
                             <div className="row justify-content-center pb-4">
                                 <div className="col-lg-8">
@@ -634,7 +628,6 @@ const Homepage = () => {
                 </div>
             </section>
             <MattersSection />
-            <Footer />
         </>
     );
 };

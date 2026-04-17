@@ -92,11 +92,9 @@ window.addEventListener('pageshow', (event) => {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <React.StrictMode>
-    <SecurityErrorBoundary>
-      <Router />
-    </SecurityErrorBoundary>
-  </React.StrictMode>
+  <SecurityErrorBoundary>
+    <Router />
+  </SecurityErrorBoundary>
 );
 
 /* ✅ 4. PERFORMANCE LOGGING */

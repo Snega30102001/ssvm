@@ -18,110 +18,253 @@ const MobileBallAnimation = () => {
     const bgRevealRef = useRef(null);
     const arrowRef = useRef(null);
 
+    // useEffect(() => {
+    //     const anim = lottie.loadAnimation({
+    //         container: lottieContainer.current,
+    //         renderer: "svg",
+    //         loop: false,
+    //         autoplay: false,
+    //         animationData: volleyballData,
+    //     });
+
+    //     anim.addEventListener("DOMLoaded", () => {
+    //         const totalFrames = anim.totalFrames;
+
+    //         const tl = gsap.timeline({
+    //             scrollTrigger: {
+    //                 trigger: containerRef.current,
+    //                 start: "top top",
+    //                 end: "+=50%", // 🔥 longer scroll = smoother control
+    //                 pin: pinRef.current,
+    //                 scrub: 1.2, // smooth lag
+    //                 anticipatePin: 1,
+    //             }
+    //         });
+
+    //         // =========================
+    //         // 🟡 PHASE 1: BALL + BG (0 → 25%)
+    //         // =========================
+    //         tl.to(ballRef.current, {
+    //             y: -window.innerHeight,
+    //             scale: 0.1,
+    //             opacity: 0,
+    //             display: "none",
+    //             ease: "power2.inOut",
+    //             duration: 5,
+    //         }, 0);
+
+    //         tl.fromTo(bgRevealRef.current,
+    //             { clipPath: "circle(0% at 50% 50%)" },
+    //             { clipPath: "circle(150% at 50% 50%)", duration: 5 },
+    //             0
+    //         );
+
+    //         // =========================
+    //         // 🎬 PHASE 2: LOTTIE SCRUB (25 → 65%)
+    //         // =========================
+    //         tl.to({}, {
+    //             duration: 5,
+    //             onUpdate: function () {
+    //                 const progress = this.progress();
+    //                 const frame = progress * (totalFrames - 1);
+    //                 anim.goToAndStop(frame, true);
+    //             }
+    //         }, 0.5);
+
+    //         // =========================
+    //         // ✨ PHASE 3: TEXT REVEAL (65 → 80%)
+    //         // =========================
+    //         tl.to(contentRef.current, {
+    //             opacity: 1,
+    //             visibility: "visible",
+    //             duration: 0.5
+    //         }, .5);
+
+    //         tl.fromTo(".text-reveal-item",
+    //             { y: 40, opacity: 0 },
+    //             { y: 0, opacity: 1, stagger: 0.3, duration: 1 },
+    //             .5
+    //         );
+
+    //         const letters = document.querySelectorAll(".text-reveal-item .letter");
+    //         tl.fromTo(letters,
+    //             { opacity: 0, y: 10 },
+    //             { opacity: 1, y: 0, stagger: 0.03, duration: 0.6 },
+    //             .5
+    //         );
+
+    //         // =========================
+    //         // 🧑‍💼 PHASE 4: FOUNDER REVEAL (80 → 100%)
+    //         // =========================
+    //         tl.to(".main-brand-stack", {
+    //             // y: -20,
+    //             scale: 0.95,
+    //             duration: 1,
+    //             ease: "power2.out"
+    //         }, .5);
+
+    //         tl.fromTo(".founder-reveal-item",
+    //             { y: 60, opacity: 0, scale: 0.9 },
+    //             { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "back.out(1.4)" },
+    //             .5
+    //         );
+
+    //         // Separate ScrollTrigger for instant arrow hide
+    //         ScrollTrigger.create({
+    //             trigger: containerRef.current,
+    //             start: "top top",
+    //             onUpdate: (self) => {
+    //                 if (self.progress > 0.01) {
+    //                     gsap.to(arrowRef.current, { opacity: 0, scale: 0, visibility: "hidden", duration: 0.2 });
+    //                 } else {
+    //                     gsap.to(arrowRef.current, { opacity: 1, scale: 1, visibility: "visible", duration: 0.2 });
+    //                 }
+    //             }
+    //         });
+    //     });
+
+    //     return () => {
+    //         anim.destroy();
+    //         ScrollTrigger.getAll().forEach(t => t.kill());
+    //     };
+    // }, []);
+
     useEffect(() => {
         const anim = lottie.loadAnimation({
-            container: lottieContainer.current,
-            renderer: "svg",
-            loop: false,
-            autoplay: false,
-            animationData: volleyballData,
-        });
+                container: lottieContainer.current,
+                renderer: "svg",
+                loop: false,
+                autoplay: false,
+                animationData: volleyballData,
+            });
 
-        anim.addEventListener("DOMLoaded", () => {
-            const totalFrames = anim.totalFrames;
+            anim.addEventListener("DOMLoaded", () => {
+                const totalFrames = anim.totalFrames;
 
-            const tl = gsap.timeline({
-                scrollTrigger: {
+            // =========================
+            // 🔥 PRE-REVEAL (BEFORE PIN)
+            // =========================
+                ScrollTrigger.create({
+                    trigger: containerRef.current,
+                start: "top 60%",   // 👈 earlier than before
+                    end: "top 20%",
+                    scrub: true,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+
+                    // BG reveal
+                        gsap.set(bgRevealRef.current, {
+                            clipPath: `circle(${progress * 50}% at 50% 50%)`
+                        });
+
+                    // Ball shrink
+                    gsap.set(ballRef.current, {
+                        scale: 1 - progress * 0.2
+                    });
+
+                    // 🔥 Arrow fade OUT EARLY
+                        gsap.to(arrowRef.current, {
+                        opacity: 1 - progress * 3,  // fades faster
+                            scale: 1 - progress * 0.5,
+                            duration: 0.1,
+                            overwrite: true
+                        });
+                    }
+                });
+
+            // =========================
+            // 🎬 MAIN PINNED TIMELINE
+            // =========================
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                    start: "top top",     // starts ONLY at top
+                    end: "+=80%",         // smoother scroll
+                        pin: pinRef.current,
+                        scrub: 1.2,
+                        anticipatePin: 1,
+                    }
+                });
+
+            // =========================
+            // 🟡 PHASE 1: BALL EXIT
+            // =========================
+                tl.to(ballRef.current, {
+                    y: -window.innerHeight,
+                    scale: 0.1,
+                    opacity: 0,
+                    ease: "power2.inOut",
+                    duration: 10,
+                }, 0);
+
+            // =========================
+            // 🎬 PHASE 2: LOTTIE SCRUB
+            // =========================
+                tl.to({}, {
+                    duration: 100,
+                    onUpdate: function () {
+                        const progress = this.progress();
+                        const frame = progress * (totalFrames - 1);
+                        anim.goToAndStop(frame, true);
+                    }
+                }, 1);
+
+            // =========================
+            // ✨ PHASE 3: TEXT REVEAL
+            // =========================
+                tl.to(contentRef.current, {
+                    opacity: 1,
+                    visibility: "visible",
+                    duration: 0.3
+                }, -5);
+
+            // tl.fromTo(".text-reveal-item",
+            //     { y: 40, opacity: 0 },
+            //     { y: 0, opacity: 1, stagger: 0.3, duration: 0.6 },
+            //    -0.5
+            // );
+
+            // const letters = document.querySelectorAll(".text-reveal-item .letter");
+            // tl.fromTo(letters,
+            //     { opacity: 0, y: 10 },
+            //     { opacity: 1, y: 0, stagger: 0.03, duration: 0.4 },
+            //     -0.5
+            // );
+
+            // =========================
+            // 🧑‍💼 PHASE 4: SCALE EFFECT
+            // =========================
+                tl.to(".main-brand-stack", {
+                    scale: 0.95,
+                    duration: 0.6,
+                    ease: "power2.out"
+                }, 1.4);
+
+            // =========================
+            // ⬇️ ARROW HIDE
+            // =========================
+                ScrollTrigger.create({
                     trigger: containerRef.current,
                     start: "top top",
-                    end: "+=50%", // 🔥 longer scroll = smoother control
-                    pin: pinRef.current,
-                    scrub: 1.2, // smooth lag
-                    anticipatePin: 1,
-                }
-            });
-
-            // =========================
-            // 🟡 PHASE 1: BALL + BG (0 → 25%)
-            // =========================
-            tl.to(ballRef.current, {
-                y: -window.innerHeight,
-                scale: 0.1,
-                opacity: 0,
-                display: "none",
-                ease: "power2.inOut",
-                duration: 5,
-            }, 0);
-
-            tl.fromTo(bgRevealRef.current,
-                { clipPath: "circle(0% at 50% 50%)" },
-                { clipPath: "circle(150% at 50% 50%)", duration: 5 },
-                -5
-            );
-
-            // =========================
-            // 🎬 PHASE 2: LOTTIE SCRUB (25 → 65%)
-            // =========================
-            tl.to({}, {
-                duration: 5,
-                onUpdate: function () {
-                    const progress = this.progress();
-                    const frame = progress * (totalFrames - 1);
-                    anim.goToAndStop(frame, true);
-                }
-            }, 0.5);
-
-            // =========================
-            // ✨ PHASE 3: TEXT REVEAL (65 → 80%)
-            // =========================
-            tl.to(contentRef.current, {
-                opacity: 1,
-                visibility: "visible",
-                duration: 0.5
-            }, .5);
-
-            tl.fromTo(".text-reveal-item",
-                { y: 40, opacity: 0 },
-                { y: 0, opacity: 1, stagger: 0.3, duration: 1 },
-                .5
-            );
-
-            const letters = document.querySelectorAll(".text-reveal-item .letter");
-            tl.fromTo(letters,
-                { opacity: 0, y: 10 },
-                { opacity: 1, y: 0, stagger: 0.03, duration: 0.6 },
-                .5
-            );
-
-            // =========================
-            // 🧑‍💼 PHASE 4: FOUNDER REVEAL (80 → 100%)
-            // =========================
-            tl.to(".main-brand-stack", {
-                // y: -20,
-                scale: 0.95,
-                duration: 1,
-                ease: "power2.out"
-            }, .5);
-
-            tl.fromTo(".founder-reveal-item",
-                { y: 60, opacity: 0, scale: 0.9 },
-                { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: "back.out(1.4)" },
-                .5
-            );
-
-            // Separate ScrollTrigger for instant arrow hide
-            ScrollTrigger.create({
-                trigger: containerRef.current,
-                start: "top top",
-                onUpdate: (self) => {
-                    if (self.progress > 0.01) {
-                        gsap.to(arrowRef.current, { opacity: 0, scale: 0, visibility: "hidden", duration: 0.2 });
-                    } else {
-                        gsap.to(arrowRef.current, { opacity: 1, scale: 1, visibility: "visible", duration: 0.2 });
+                    onUpdate: (self) => {
+                        if (self.progress > 0.01) {
+                        gsap.to(arrowRef.current, {
+                            opacity: 0,
+                            scale: 0,
+                            visibility: "hidden",
+                            duration: 0.2
+                        });
+                        } else {
+                        gsap.to(arrowRef.current, {
+                            opacity: 1,
+                            scale: 1,
+                            visibility: "visible",
+                            duration: 0.2
+                        });
+                        }
                     }
-                }
+                });
             });
-        });
 
         return () => {
             anim.destroy();
@@ -147,7 +290,7 @@ const MobileBallAnimation = () => {
                 {/* BALL */}
                 <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ zIndex: 5 }}>
                     <div ref={ballRef} className="minimal-ball-v12 d-flex justify-content-center align-items-center">
-                        <i ref={arrowRef} className="bi bi-chevron-down text-dark fs-2 fw-bold jump-animation"></i>
+                        <i ref={arrowRef} className="bi bi-arrow-down text-dark fs-2 fw-bold jump-animation"></i>
                     </div>
                 </div>
 
@@ -162,7 +305,7 @@ const MobileBallAnimation = () => {
                     {/* TEXT */}
                     <div
                         ref={contentRef}
-                        // style={{ opacity: 0, visibility: "hidden" }}
+                        style={{ opacity: 0, visibility: "hidden" }}
                         className="text-center px-3 mb-5"
                     >
                         <div className="text-reveal-item mb-3">

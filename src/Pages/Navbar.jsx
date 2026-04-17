@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import gsap from "gsap";
 import "../assets/css/navbar.css";
 
@@ -12,30 +13,30 @@ const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
 
     // Scroll hide/show navbar (your existing logic)
-    useEffect(() => {
-        const nav = navRef.current;
-        let lastScroll = 0;
+    // useEffect(() => {
+    //     const nav = navRef.current;
+    //     let lastScroll = 0;
 
-        const handleScroll = () => {
-            const currentScroll = window.scrollY;
+    //     const handleScroll = () => {
+    //         const currentScroll = window.scrollY;
 
-            if (currentScroll <= 10) {
-                nav.classList.remove("navbar-fixed");
-                return;
-            }
+    //         if (currentScroll <= 10) {
+    //             nav.classList.remove("navbar-fixed");
+    //             return;
+    //         }
 
-            if (currentScroll < lastScroll) {
-                nav.classList.add("navbar-fixed");
-            } else {
-                nav.classList.remove("navbar-fixed");
-            }
+    //         if (currentScroll < lastScroll) {
+    //             nav.classList.add("navbar-fixed");
+    //         } else {
+    //             nav.classList.remove("navbar-fixed");
+    //         }
 
-            lastScroll = currentScroll;
-        };
+    //         lastScroll = currentScroll;
+    //     };
 
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    //     window.addEventListener("scroll", handleScroll);
+    //     return () => window.removeEventListener("scroll", handleScroll);
+    // }, []);
 
     // Body scroll lock + animation
     useEffect(() => {
@@ -71,13 +72,13 @@ const Navbar = () => {
     }, [menuOpen]);
 
     const handleScrollTo = (id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
+            const el = document.getElementById(id);
+            if (!el) return;
 
-        el.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-        });
+            el.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
 
         setMenuOpen(false); // close mobile menu if open
     };
@@ -89,7 +90,9 @@ const Navbar = () => {
 
                     {/* LEFT LOGO */}
                     <div className="logo left_logo">
-                        <img src={`${BASE_IMAGE_URL}logo-video.gif`} className="logo-video" alt="" />
+                        <Link to={"/"}>
+                            <img src={`${BASE_IMAGE_URL}logo-video.gif`} className="logo-video" alt="" />
+                        </Link>
                     </div>
 
                     {/* DESKTOP NAV */}

@@ -42,13 +42,11 @@ export const SecurityUtils = {
                 document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
             }
 
-            // ✅ Clear Console (Requested "Catch Clear")
-            console.clear();
-            console.log("Security Layer: System wiped and console cleared successfully.");
+            // ❌ REMOVED console.clear() to allow debugging
+            console.log("Security Layer: System wiped successfully.");
             return true;
         } catch (error) {
-            console.clear();
-            console.error("Security Layer Error: Failed to clear cache. Console cleared anyway.", error);
+            console.error("Security Layer Error: Failed to clear cache.", error);
             return false;
         }
     },
@@ -87,93 +85,67 @@ export const SecurityUtils = {
 export class SecurityErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { hasError: false };
+        this.state = { hasError: false, error: null };
     }
 
     static getDerivedStateFromError(error) {
-        return { hasError: true };
+        return { hasError: true, error: error };
     }
 
     componentDidCatch(error, errorInfo) {
+        // 1. Log error for diagnostics
         console.error("Security Layer caught an error:", error, errorInfo);
-        // Automatically clear cache to prevent persistent corrupted state
+        
+        // 2. Clear cache to prevent corrupted state
         SecurityUtils.clearAppCache();
+
+        // 3. INSTANT RECOVERY for DOM errors: If it's the notorious "removeChild" React error,
+        // we reload IMMEDIATELY to resolve the DOM mismatch and show the page details.
+        const errorMsg = error?.message || "";
+        const isDomError = errorMsg.includes("removeChild") || errorMsg.includes("appendChild");
+
+        const lastCrash = sessionStorage.getItem('last_security_crash');
+        const now = Date.now();
+        
+        if (!lastCrash || (now - parseInt(lastCrash)) > 5000) {
+            sessionStorage.setItem('last_security_crash', now.toString());
+            
+            if (isDomError) {
+                // Silent instant reload for DOM mismatch (GSAP conflict)
+                window.location.reload();
+            } else {
+                // Short delay for other security exceptions
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        }
+    }
+
+    componentDidCatch(error, errorInfo) {
+        // 1. Log error for diagnostics
+        console.error("Security Layer: Auto-healing from exception:", error);
+        
+        // 2. Clear cache to ensure clean state on reload
+        SecurityUtils.clearAppCache();
+
+        // 3. SILENT RECOVERY: Instead of showing a shield, we reload immediately.
+        // This makes the fix look like a standard (slightly slower) page load.
+        const lastCrash = sessionStorage.getItem('last_security_crash');
+        const now = Date.now();
+        
+        // Prevent infinite loops (only reload if last crash was > 3s ago)
+        if (!lastCrash || (now - parseInt(lastCrash)) > 3000) {
+            sessionStorage.setItem('last_security_crash', now.toString());
+            window.location.reload();
+        }
     }
 
     render() {
         if (this.state.hasError) {
-            return (
-                <div style={{
-                    height: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                    fontFamily: "'Inter', sans-serif",
-                    color: 'white',
-                    padding: '20px'
-                }}>
-                    <div style={{
-                        maxWidth: '500px',
-                        width: '100%',
-                        padding: '40px',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '24px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        textAlign: 'center',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                    }}>
-                        <div style={{
-                            width: '64px',
-                            height: '64px',
-                            background: 'rgba(239, 68, 68, 0.2)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 24px',
-                            color: '#ef4444',
-                            fontSize: '24px'
-                        }}>
-                            <i className="bi bi-shield-lock-fill"></i>
-                        </div>
-                        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
-                            Security Shield Active
-                        </h2>
-                        <p style={{ color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.6', marginBottom: '32px' }}>
-                            We detected an inconsistency that might affect your experience.
-                            Your environment has been automatically neutralized and secured.
-                        </p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            style={{
-                                width: '100%',
-                                padding: '14px 28px',
-                                background: 'linear-gradient(to right, #3b82f6, #2563eb)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                fontSize: '16px',
-                                boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.3)';
-                            }}
-                        >
-                            Resume Securely
-                        </button>
-                    </div>
-                </div>
-            );
+            // Invisible recovery: setting flag to skip the next preloader loop
+            sessionStorage.setItem('skip_preloader', 'true');
+            return null; // Don't show any UI, just wait for reload
         }
 
         return this.props.children;

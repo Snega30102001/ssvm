@@ -60,13 +60,13 @@ const VolleyBallAnimation = () => {
             ScrollTrigger.refresh();
         };
 
-        animation = lottie.loadAnimation({
-            container: lottieContainer.current,
-            renderer: "svg",
-            loop: false,
-            autoplay: false,
-            animationData: runnerAnimation,
-        });
+            animation = lottie.loadAnimation({
+                container: lottieContainer.current,
+                renderer: "svg",
+                loop: false,
+                autoplay: false,
+                animationData: runnerAnimation,
+            });
 
         // ✅ Watch for container size changes (fixes collapse on slow loads)
         const ro = new ResizeObserver(() => {
@@ -76,34 +76,34 @@ const VolleyBallAnimation = () => {
         });
         if (sectionRef.current) ro.observe(sectionRef.current);
 
-        animation.addEventListener("DOMLoaded", () => {
+            animation.addEventListener("DOMLoaded", () => {
             // ✅ Double refresh to catch final layout
             safeRefresh();
             setTimeout(safeRefresh, 100);
             
-            const totalFrames = animation.totalFrames;
+                const totalFrames = animation.totalFrames;
 
-            gsap.set(bottomTextRef.current, { opacity: 1, y: 0 });
-            gsap.set(middleTextRef.current, { opacity: 0, y: 0 });
-            gsap.set(centerTextRef.current, { opacity: 0, y: 60, scale: 0.1 });
+                gsap.set(bottomTextRef.current, { opacity: 1, y: 0 });
+                gsap.set(middleTextRef.current, { opacity: 0, y: 0 });
+                gsap.set(centerTextRef.current, { opacity: 0, y: 60, scale: 0.1 });
 
-            ScrollTrigger.create({
-                trigger: sectionRef.current,
-                start: "top top",
-                end: () => "+=" + window.innerHeight * 1.48,
-                scrub: true,
-                pin: true,
-                pinSpacing: true,
-                anticipatePin: 1,
+                ScrollTrigger.create({
+                    trigger: sectionRef.current,
+                    start: "top top",
+                    end: () => "+=" + window.innerHeight * 1.48,
+                    scrub: true,
+                    pin: true,
+                    pinSpacing: true,
+                    anticipatePin: 1,
                 invalidateOnRefresh: true,
-
+                        
                 onUpdate: (self) => {
-                    const progress = self.progress;
+                        const progress = self.progress;
                     const slowFactor = 0.8;
                     const slowedProgress = Math.min(progress * slowFactor, 1);
-                    const frame = Math.round(slowedProgress * (totalFrames - 1));
-                    
-                    animation.goToAndStop(frame, true);
+                        const frame = Math.round(slowedProgress * (totalFrames - 1));
+                        
+                        animation.goToAndStop(frame, true);
 
                     if (progress > 0.53 && !bottomHidden) {
                         bottomHidden = true;
@@ -125,7 +125,7 @@ const VolleyBallAnimation = () => {
                             duration: 0.6,
                             ease: "power2.out",
                         });
-                    }
+                        }
 
                     if (progress > 0.75 && progress < 0.96 && !centerShown && !middleShown) {
                         middleShown = true;
@@ -147,7 +147,7 @@ const VolleyBallAnimation = () => {
                             duration: 0.6,
                             ease: "power2.out",
                         });
-                    }
+                        }
 
                     if (progress > 0.95 && !centerShown) {
                         centerShown = true;
@@ -171,19 +171,19 @@ const VolleyBallAnimation = () => {
                             duration: 0.6,
                             ease: "power2.out",
                         });
-                    }
+                        }
 
-                    if (progress >= 0.9) {
-                        gsap.to(sectionRef.current, { backgroundColor: "#F2FF33", duration: 0.5 });
-                    } else {
+                        if (progress >= 0.9) {
+                            gsap.to(sectionRef.current, { backgroundColor: "#F2FF33", duration: 0.5 });
+                        } else {
                         gsap.to(sectionRef.current, { backgroundColor: "", duration: 0.5 });
-                    }
-                },
-                onLeave: () => {
+                        }
+                    },
+                    onLeave: () => {
                     animation.goToAndStop(totalFrames - 1, true);
-                },
+                    },
+                });
             });
-        });
 
         return () => {
             animation?.destroy();

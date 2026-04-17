@@ -70,6 +70,7 @@ const HorseAnimation = () => {
                 {
                     frame: totalFrames - 1,
                     ease: "none",
+                    duration: 2,
                     onUpdate: () => {
                         animation.goToAndStop(Math.round(playhead.frame), true);
                     },
@@ -83,7 +84,7 @@ const HorseAnimation = () => {
                 {
                     scale: 1,
                     ease: "expo.out",
-                    duration: 2,
+                    duration: 5,
                 },
                 0.2
             );
@@ -96,7 +97,7 @@ const HorseAnimation = () => {
                     scale: 1,
                     opacity: 1,
                     ease: "expo.out",
-                    duration: 1,
+                    duration: 6,
                 },
                 0.3
             );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "../assets/css/footer.css";
 
 const BASE_IMAGE_URL = "https://ssvm-new.onrender.com/assets/images/"
@@ -59,7 +60,9 @@ const Footer = () => {
                                 <div className="footer-block text-lg-start text-center">
                                     {/* <img src="./assets/images/logo-white.png" alt="" /> */}
                                     <div className="logo d-flex justify-content-lg-start justify-content-center">
-                                        <img src={`${BASE_IMAGE_URL}logo-video.gif`} className="logo-video" alt="" />
+                                        <Link to={"/"}>
+                                            <img src={`${BASE_IMAGE_URL}logo-video.gif`} className="logo-video" alt="" />
+                                        </Link>
                                     </div>
                                     <p className="footer-text mt-4">
                                         Stay connected with SSVM Institutions and explore what’s shaping the future of education.
